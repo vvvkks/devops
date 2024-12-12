@@ -1,0 +1,30 @@
+- name: Docker Playbook
+  hosts: app
+  become: true
+  roles: 
+    - docker
+  # tasks:
+  #   - name: Packages install
+  #     apt:
+  #       name:
+  #         - ca-certificates
+  #         - curl
+  #         - gnupg
+  #       update-cache: true
+  #   - name: Add docker GPG key
+  #     apt_key:
+  #       url: "https://download.docker.com/linux/ubuntu/gpg"
+  #       state: present
+  #   - name: Add repository into sources list
+  #     apt_repository:
+  #       repo: "deb [arch=amd64] https://download.docker.com/linux/ubnutu focal stable"
+  #       state: present
+  #   - name: Install Docker
+  #     apt:
+  #       name:
+  #         - docker
+  #         - docker.io
+  #         - docker-compose
+  #         - docker-registry
+  #       state: latest
+  #       update-cache: true
