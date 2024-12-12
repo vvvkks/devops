@@ -1,0 +1,31 @@
+---
+- name: Packages install
+  apt:
+    pkg:
+      "{{ apt_packages }}"
+    state: "{{ apt_packages_state }}"
+    update_cache: true
+
+- name: Add docker GPG key
+  apt_key:
+    url: "{{ gpg_key_repo_url }}"
+    state: "{{ apt_repos_state }}"
+
+- name: Add repository into sources list
+  apt_repository:
+    repo: "{{ docker_repo_url }}"
+    state: "{{ apt_repos_state }}"
+
+- name: Install Docker
+  apt:
+    pkg:
+      "{{ apt_docker_packages }}"
+    state: "{{ apt_docker_packages_state }}"
+    update_cache: true
+
+- name: Add User to Docker Group
+  user:
+    name: "{{ item }}"
+    groups: docker
+    append: true
+  with_items: "{{ docker_users }}"
