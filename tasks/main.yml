@@ -1,31 +1,25 @@
 ---
-- name: Packages install
+- name: "Install Nginx"
   apt:
-    pkg:
-      "{{ apt_packages }}"
-    state: "{{ apt_packages_state }}"
-    update_cache: true
+    name: nginx
+    state: "{{ nginx_state }}"
+    update_cache: yes
 
-- name: Add docker GPG key
-  apt_key:
-    url: "{{ gpg_key_repo_url }}"
-    state: "{{ apt_repos_state }}"
+- name: "Copy Nginx Default HTML"
+  copy:
+    src: "{{ nginx_default_html_src }}"
+    dest: "{{ nginx_default_html_dest }}"
+    mode: preserve
 
-- name: Add repository into sources list
-  apt_repository:
-    repo: "{{ docker_repo_url }}"
-    state: "{{ apt_repos_state }}"
+- name: "Copy Nginx Config File"
+  template:
+    src: "{{ nginx_config_src }}"
+    dest: "{{ nginx_config_available }}"
+  notify: "Restart Nginx"
 
-- name: Install Docker
-  apt:
-    pkg:
-      "{{ apt_docker_packages }}"
-    state: "{{ apt_docker_packages_state }}"
-    update_cache: true
-
-- name: Add User to Docker Group
-  user:
-    name: "{{ item }}"
-    groups: docker
-    append: true
-  with_items: "{{ docker_users }}"
+- name: "Enable Configuration"
+  file:
+    src: "{{ nginx_config_available }}"
+    dest: "{{ nginx_config_enabled }}"
+    state: link
+  notify: "Restart Nginx"
