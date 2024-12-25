@@ -1,0 +1,20 @@
+---
+- include_tasks: ca-server-init.yml
+
+- include_tasks: openvpn-server-init.yml
+
+- include_tasks: ca-server-sign-server.yml
+
+- include_tasks: openvpn-server-copy-servers-certs.yml
+
+- include_tasks: openvpn-server-register-clients.yml
+
+- include_tasks: ca-server-sign-client.yml
+
+- include_tasks: openvpn-server-copy-client-certs.yml
+
+- include_tasks: openvpn-server-config.yml
+
+- include_tasks: openvpn-server-create-client-infra.yml
+
+- include_tasks: openvpn-client.yml
