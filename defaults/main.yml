@@ -1,23 +1,12 @@
 ---
-apt_packages:
-  - ca-certificates
-  - curl
-  - gnupg
+nginx_state: "latest"
 
-apt_packages_state: "latest"
+nginx_default_html_src: "files/index.html"
+nginx_default_html_dest: "/var/www/html"
 
-gpg_key_repo_url: "https://download.docker.com/linux/ubuntu/gpg"
+nginx_config_src: "templates/nginx.conf.j2"
+nginx_config_available: "/etc/nginx/sites-available/default"
+nginx_config_enabled: "/etc/nginx/sites-enabled/default"
 
-apt_repos_state: "present"
-
-docker_repo_url: "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
-
-apt_docker_packages:
-  - docker
-  - docker.io
-  - docker-compose
-  - docker-registry
-
-apt_docker_packages_state: "latest"
-
-docker_users: []
+nginx_template_server_name: "localhost"
+nginx_template_static_root: "/var/www/html"
