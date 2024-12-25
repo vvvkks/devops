@@ -1,5 +1,8 @@
 ---
-- name: "Restart Nginx"
-  service:
-    name: nginx
-    state: restarted 
+# handlers file for openvpn
+- name: "start openvpn"
+  become: true
+  service: 
+    name: openvpn-server@server.service
+    state: started
+    enabled: yes
