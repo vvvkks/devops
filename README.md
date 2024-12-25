@@ -1,58 +1,68 @@
-Role Name
-=========
+# Ansible Role: Nginx
 
-This Ansible role installs and configures Docker on Ubuntu-based systems. It ensures Docker and its dependencies are installed, the Docker GPG key and repository are added, and users are optionally added to the Docker group.
+## Description
+This Ansible role installs and configures the Nginx web server. It sets up a default web page and allows configuration of the server name and static file root. The role is designed to be flexible and customizable to meet the needs of various environments.
 
-Requirements
-------------
-- Ansible version 2.1 or higher.
+## Requirements
+
+- Minimum Ansible version: 2.1
 - Supported platforms:
-  - Ubuntu 20.04 (Focal)
-- Internet access for downloading Docker packages and keys.
+  - Not explicitly defined. Add specific platforms in meta/main.yml.
 
-Role Variables
---------------
+## Role Variables
 
-The following variables can be configured to customize the role's behavior:
+The following variables are available for customization. Defaults are provided in defaults/main.yml:
 
-### Default Variables (from `defaults/main.yml`):
-| Variable                 | Default Value                                                | Description                                                              |
-|--------------------------|-------------------------------------------------------------|--------------------------------------------------------------------------|
-| apt_packages           | ['ca-certificates', 'curl', 'gnupg']                      | List of required APT packages.                                           |
-| apt_packages_state     | latest                                                    | State of APT packages (`present` or `latest`).                           |
-| gpg_key_repo_url       | https://download.docker.com/linux/ubuntu/gpg              | URL for the Docker GPG key.                                              |
-| apt_repos_state        | present                                                   | State of the Docker repository (`present` or `absent`).                  |
-| docker_repo_url        | deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable | URL for the Docker APT repository.                                       |
-| apt_docker_packages    | ['docker', 'docker.io', 'docker-compose', 'docker-registry'] | List of Docker-related packages to install.                             |
-| apt_docker_packages_state | latest                                                | State of Docker packages (`present` or `latest`).                        |
-| docker_users           | []                                                        | List of users to add to the Docker group.                                |
+| Variable                     | Default Value                | Description                                   |
+|------------------------------|------------------------------|-----------------------------------------------|
+| nginx_state                | latest                    | Defines the state of the nginx package.       |
+| nginx_default_html_src     | files/index.html          | Path to the default HTML file on the control node. |
+| nginx_default_html_dest    | /var/www/html             | Path where the default HTML file will be copied. |
+| nginx_config_src           | templates/nginx.conf.j2   | Path to the nginx configuration template.     |
+| nginx_config_available     | /etc/nginx/sites-available/default | Path to the configuration in sites-available. |
+| nginx_config_enabled       | /etc/nginx/sites-enabled/default | Path to the configuration in sites-enabled.  |
+| nginx_template_server_name | localhost                 | Server name in the nginx configuration.       |
+| nginx_template_static_root | /var/www/html             | Root directory for static files.              |
+
+## Dependencies
+
+None.
+
+## Example Playbook
 
 
-Dependencies
-------------
-
-This role has no external dependencies.
-
-Example Playbook
-----------------
-
-Here's an example of how to use this role:
-
-```yaml
-- name: Install Docker and configure users
-  hosts: all
+- hosts: all
   roles:
-    - role: itmo.docker
+    - role: nginx
       vars:
-        docker_users:
-          - user1
-          - user2
-```
+        nginx_state: "present"
+        nginx_template_server_name: "example.com"
 
-License
--------
-BSD
 
-Author Information
-------------------
-An optional section for the role authors to include contact information, or a website (HTML is not allowed).
+## Handlers
+
+This role defines the following handlers:
+
+| Name            | Action         |
+|-----------------|----------------|
+| Restart Nginx | Restarts the nginx service. |
+
+## Templates
+
+The role uses the following templates:
+
+- templates/nginx.conf.j2: Nginx server configuration. Variables such as nginx_template_server_name and nginx_template_static_root can be customized.
+
+## Files
+
+The role includes the following files:
+
+- files/index.html: Default HTML file served by nginx.
+
+## Author Information
+
+Role created by Viktoriia and Polina at ITMO.
+
+## License
+
+This role is licensed under a valid SPDX license ID, as defined in meta/main.yml (e.g., GPL-2.0-or-later, MIT).
