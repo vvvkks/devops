@@ -1,8 +1,20 @@
 ---
-- name: Converge
-  hosts: all
-  gather_facts: false
+- name: Setup Master
+  hosts: master
+  become: true
   tasks:
-    - name: "Include openvpn"
-      ansible.builtin.include_role:
-        name: "openvpn"
+    - name: "Include acme.ansible_role_postgresql"
+      include_role:
+        name: "acme.ansible_role_postgresql"
+      vars:
+        postgresql_role: master
+
+- name: Setup Replica
+  hosts: replica
+  become: true
+  tasks:
+    - name: "Include acme.ansible_role_postgresql"
+      include_role:
+        name: "acme.ansible_role_postgresql"
+      vars:
+        postgresql_role: replica
