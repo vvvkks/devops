@@ -1,0 +1,8 @@
+---
+- name: "Postgresql | Configure HBA"
+  template:
+    src: templates/pg_hba.conf.j2
+    dest: "{{ postgresql_data_dir }}/main/pg_hba.conf"
+    owner: postgres
+    group: postgres
+    mode: 0600
