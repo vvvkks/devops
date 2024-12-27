@@ -1,0 +1,14 @@
+---
+- name: "Postgresql | Create databases"
+  become: true
+  become_user: postgres
+  vars:
+    ansible_ssh_pipelining: true
+  postgresql_db:
+    name: "{{ item.name }}"
+    encoding: "{{ item.encoding | default(omit) }}"
+    lc_collate: "{{ item.lc_collate | default(omit) }}"
+    lc_ctype: "{{ item.lc_ctype | default(omit) }}"
+    conn_limit: "{{ item.conn_limit | default(omit)}}"
+    port: "{{ item.port | default(5432) }}"
+  with_items: "{{ postgresql_databases }}"
