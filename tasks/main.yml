@@ -1,20 +1,59 @@
 ---
-- include_tasks: ca-server-init.yml
+- name: "Postgresql | Install additional packages"
+  apt:
+    name: "{{ postgresql_additional_packages }}"
+    state: present
+    update_cache: yes
 
-- include_tasks: openvpn-server-init.yml
+- name: "Postgresql | Import the repository signing key"
+  apt_key:
+    url: "{{ postgresql_repo_key }}"
+    state: present
 
-- include_tasks: ca-server-sign-server.yml
+- name: "Postgresql | Create the file repo config"
+  apt_repository:
+    repo: "{{ postgresql_repo }}"
+    state: present
+    filename: "{{ postgresql_repo_filename }}"
 
-- include_tasks: openvpn-server-copy-servers-certs.yml
+- name: "Postgresql | Install package"
+  apt:
+    name: "{{ postgresql_packages }}"
+    state: present
+    update_cache: yes
 
-- include_tasks: openvpn-server-register-clients.yml
+- include_tasks: initialize.yaml
 
-- include_tasks: ca-server-sign-client.yml
+- include_tasks: configure.yaml
 
-- include_tasks: openvpn-server-copy-client-certs.yml
+- name: "Postgresql | Ensure Postgresql started and enabled"
+  service: 
+    name: "{{ postgresql_service_name }}"
+    state: started
+    enabled: "{{ postgresql_service_enabled }}"
 
-- include_tasks: openvpn-server-config.yml
+- name: "Postgresql | Detect current data directory"
+  become: true
+  become_user: postgres
+  vars:
+    ansible_ssh_pipelining: true
+  postgresql_query:
+    query: SHOW data_directory
+  register: postgresql_current_data_dir
 
-- include_tasks: openvpn-server-create-client-infra.yml
+- include_tasks: change_data_directory.yaml
+  vars:
+    postgresql_new_dir_with_main_path: "{{ postgresql_new_data_dir }}/{{ postgresql_version }}/main"
+  when: 
+    - postgresql_new_data_dir != "" # new dir exists
+    - postgresql_new_dir_with_main_path != postgresql_current_data_dir.query_result[0].data_directory # if playbook runs several times
 
-- include_tasks: openvpn-client.yml
+- name: "Postgresql | Check if standby.signal exists"
+  stat:
+    path: "{{ postgresql_data_dir }}/main/standby.signal"
+  register: standby_signal_file
+
+- name: "Postgresql | Setup postgres Master or Replica"
+  include_tasks: 
+    file: "{{ postgresql_role }}.yaml"
+  when: not standby_signal_file.stat.exists
