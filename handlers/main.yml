@@ -1,8 +1,6 @@
 ---
-# handlers file for openvpn
-- name: "start openvpn"
-  become: true
+---
+- name: "Postgresql | Restart postgresql"
   service: 
-    name: openvpn-server@server.service
-    state: started
-    enabled: yes
+    name: "{{ postgresql_service_name }}"
+    state: restarted
