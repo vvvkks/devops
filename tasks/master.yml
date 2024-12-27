@@ -1,0 +1,40 @@
+---
+- include_tasks: master_tasks/add_databases.yaml
+
+- include_tasks: master_tasks/add_users.yaml
+
+- include_tasks: master_tasks/grant_priveleges.yaml
+
+- name: "Postgresql | Update postgres user password"
+  become: true
+  become_user: postgres
+  vars:
+    ansible_ssh_pipelining: true
+  postgresql_user:
+    name: postgres
+    password: "{{ postgresql_postgres_password }}"
+
+- name: "Postgresql | Update pg_hba for master"
+  postgresql_pg_hba:
+    dest: "{{ postgresql_config_dir }}/pg_hba.conf"
+    contype: host
+    databases: replication
+    source: "{{ hostvars[item].ansible_host }}/32"
+    method: "{{ postgresql_replication_hba_method }}"
+    users: postgres
+  with_items: "{{ groups.replica }}"
+
+- name: "Postgresql | Update postgresql.conf for master"
+  blockinfile:
+    path: "{{ postgresql_config_dir }}/postgresql.conf"
+    block: |
+      listen_addresses = 'localhost, {{ hostvars[item].ansible_host }}'
+      wal_level = hot_standby
+      archive_mode = on
+      archive_command = 'cd .'
+      max_wal_senders = 8
+      hot_standby = on
+  with_items: "{{ groups.master }}"
+  notify: "Postgresql | Restart postgresql"
+
+- meta: flush_handlers
