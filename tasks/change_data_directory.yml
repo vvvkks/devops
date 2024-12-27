@@ -1,0 +1,26 @@
+---
+- name: "Postgresql | Ensure Postgresql stopped"
+  service: 
+    name: "{{ postgresql_service_name }}"
+    state: stopped
+
+- name: "Postgresql | Rsync directories"
+  synchronize:
+    src: "{{ postgresql_data_dir }}"
+    dest: "{{ postgresql_new_data_dir }}"
+  delegate_to: "{{ inventory_hostname }}"
+
+- name: "Postgresql | Configure postgresql.conf"
+  lineinfile:
+    path: "{{ postgresql_config_dir }}/postgresql.conf"
+    regexp: '^data_directory'
+    line: "data_directory = '{{ postgresql_new_data_dir }}/{{ postgresql_version }}/main'"
+
+- name: "Postgresql | Change data directory"
+  set_fact: 
+    postgresql_data_dir: "{{ postgresql_new_data_dir }}/{{ postgresql_version }}"
+
+- name: "Postgresql | Ensure Postgresql started"
+  service: 
+    name: "{{ postgresql_service_name }}"
+    state: started
