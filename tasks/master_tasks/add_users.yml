@@ -1,0 +1,13 @@
+---
+- name: "Postgresql | Create users"
+  become: true
+  become_user: postgres
+  vars:
+    ansible_ssh_pipelining: true
+  postgresql_user:
+    name: "{{ item.name }}"
+    password: "{{ item.password }}"
+    encrypted: "{{ item.encrypted | default('true') }}"
+    role_attr_flags: "{{ item.role_attr_flags | default(omit) }}"
+    port: "{{ item.port | default(5432) }}"
+  with_items: "{{ postgresql_users }}"
