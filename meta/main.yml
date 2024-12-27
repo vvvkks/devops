@@ -1,9 +1,10 @@
 galaxy_info:
   author: Viktoriia and Polina
   description: Owners
+  namespace: role
   company: itmo
 
-  # If the issue tracker for your role is not on github, uncomment the
+ # If the issue tracker for your role is not on github, uncomment the
   # next line and provide a value
   # issue_tracker_url: http://example.com/issue/tracker
 
@@ -37,7 +38,7 @@ galaxy_info:
   #   - all
   #   - 1.0
   #   - 7
-  #   - 99.99 
+  #   - 99.99
 
   galaxy_tags: []
     # List tags for your role here, one per line. A tag is a keyword that describes
