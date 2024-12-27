@@ -1,0 +1,61 @@
+---
+- name: "Postgresql | Ensure Postgresql stopped"
+  service: 
+    name: "{{ postgresql_service_name }}"
+    state: stopped
+
+- name: "Postgresql | Update pg_hba for replica"
+  postgresql_pg_hba:
+    dest: "{{ postgresql_config_dir }}/pg_hba.conf"
+    contype: host
+    databases: replication
+    source: "{{ hostvars[item].ansible_host }}/32"
+    method: "{{ postgresql_replication_hba_method }}"
+    users: postgres
+  with_items: "{{ groups.master }}"
+
+- name: "Postgresql | Update postgresql.conf for replica"
+  blockinfile:
+    path: "{{ postgresql_config_dir }}/postgresql.conf"
+    block: |
+      listen_addresses = 'localhost, {{ hostvars[item].ansible_host }}'
+      wal_level = hot_standby
+      archive_mode = on
+      archive_command = 'cd .'
+      max_wal_senders = 8
+      hot_standby = on
+  with_items: "{{ groups.replica }}"
+
+- name: "Postgresql | Remove main dir"
+  become: true
+  become_user: postgres
+  vars:
+    ansible_ssh_pipelining: true
+  file:
+    path: "{{ postgresql_data_dir }}/main"
+    state: absent
+
+- name: "Postgresql | Create main dir"
+  become: true
+  become_user: postgres
+  vars:
+    ansible_ssh_pipelining: true
+  file:
+    path: "{{ postgresql_data_dir }}/main"
+    state: directory
+    mode: go-rwx
+
+- name: "Postgresql | Create backup"
+  become: true
+  become_user: postgres
+  vars:
+    ansible_ssh_pipelining: true
+  command: "pg_basebackup -P -R -X stream -c fast -h {{ hostvars[item].ansible_host }} -U postgres -D {{ postgresql_data_dir }}/main"
+  environment:
+    PGPASSWORD: "{{ postgresql_postgres_password }}"
+  with_items: "{{ groups.master }}"
+
+- name: "Postgresql | Ensure Postgresql started"
+  service: 
+    name: "{{ postgresql_service_name }}"
+    state: started
