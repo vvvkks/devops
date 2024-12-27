@@ -1,0 +1,29 @@
+---
+- name: "Postgresql | Grant priveleges to users"
+  become: true
+  become_user: postgres
+  vars:
+    ansible_ssh_pipelining: true
+  postgresql_privs:
+    type: database
+    database: "{{ item.name }}"
+    roles: "{{ item.roles }}"
+    privs: "{{ item.privs | default(ALL) }}"
+  with_items: "{{ postgresql_databases }}"
+
+- name: "Postgresql | Allow md5 connections for users"
+  become: true
+  become_user: postgres
+  vars:
+    ansible_ssh_pipelining: true
+  postgresql_pg_hba:
+    dest: "{{ postgresql_config_dir }}/pg_hba.conf"
+    contype: host
+    source: 127.0.0.1/32
+    databases: "{{ item.name }}"
+    method: "{{ postgresql_users_hba_method }}"
+    users: "{{ item.roles }}"
+  with_items: "{{ postgresql_databases }}"
+  notify: "Postgresql | Restart postgresql"
+
+- meta: flush_handlers
